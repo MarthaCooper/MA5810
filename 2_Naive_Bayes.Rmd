@@ -1,0 +1,485 @@
+---
+title: "MA8510: Introduction to Data Mining"
+subtitle: "Collaborate Session 2: Naive Bayes"
+author: "Martha Cooper, PhD"
+institute: "JCU Masters of Data Science"
+date: "2019-21-9 (updated: `r Sys.Date()`)"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r xaringan-themer, include = FALSE}
+library(xaringanthemer)
+mono_accent(
+  base_color = "#045a8d",
+  header_font_google = google_font("Josefin Sans"),
+  text_font_google   = google_font("Montserrat", "300", "300i"),
+  code_font_google   = google_font("IBM Plex Mono")
+)
+```
+
+```{r, include = F}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+## Housekeeping
+
++ Collaborate 1 = **Wednesdays 6-7pm** (Martha)
+
++ Collaborate 2 = **Thursdays 7-8pm** (Hongbin)
+
+For my Collaborate Sessions, you can get the **slides & R code** for each week here:
+
+**https://github.com/MarthaCooper/MA8510**
+
+.center[
+
+<img src="Pics/download_github.png" style="width: 50%" />
+
+]
+
+---
+
+## Subject: MA8510 Intro to Data Mining
+
+MA8510 Learning Outcomes
+
+1. Overview of Data Mining and Examples
+
+2. Unsupervised data mining methods e.g. clustering and outlier detection;
+
+3. Unsupervised and supervised techniques for dimensionality reduction;
+
+4. **Supervised data mining methods for pattern classification (Today = Naive Bayes)**;
+
+5. **Apply these concepts to real data sets using R (Today)**.
+
+---
+
+## Today's Goals
+
++ Understand the background behind Naive Bayes Classifiers
+ 
++ Apply Naive Bayes Classifiers to real datasets using R
+
++ Understand the pros and cons of Naive Bayes Classifiers
+
+---
+
+### Naive Bayes Classifier
+
+- Supervised, probabilistic classifier based on Bayes Theorem
+
+- Strong independence assumptions
+
+- A famous use case is spam filtering of emails
+
+- **Factor variable** - Multinomial Naive Bayes Classifier
+- **Continuous variables** - Gaussian Naive Bayes Classifier
+
+- Given these features, does this sample belong to class X or Y?
+
+---
+### Data
+
++ We are going to use **Class**, **Sex** and **Age** data to predict **Survival** on the Titanic 
++ We first need to get the data and do a bit of wrangling
+```{r, results = "hide"}
+data(Titanic)
+str(Titanic)
+
+#function to convert to long format (one passenger per row)
+counts_to_cases <- function(x){
+  #how many time to repeat each row
+  inds <- rep.int(seq_len(nrow(x)), times = x[["Freq"]])
+  #remove frequency column
+  x <- select(x, -Freq)
+  #get rows from x
+  x[inds,]
+}
+
+case_titanic <- counts_to_cases(as.data.frame(Titanic))
+
+#head(case_titanic, 3)
+#dim(case_titanic) 
+```
+.pull-right[
+
+[Zhang, 2016](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4930525/)
+
+]
+---
+### Split into test and training 
+
++ We will train our Naive Bayes Classifier on 80% of the data
++ We can use the caret package to split the data
+```{r, results = "hide", warning=FALSE}
+library(caret, warn.conflicts = F, quietly = T)
+
+set.seed(1234)
+split <- createDataPartition(case_titanic$Survived, p = 0.8, list = FALSE)
+
+train <- case_titanic[split, ]
+test <- case_titanic[-split, ]
+
+c(nrow(train), nrow(test)) # print number of observations in test vs. train
+
+table(train$Survived) %>% prop.table() # Proportions of Survived Yes and No
+```
+
+---
+### Naive Bayes: An Overview
+
++ Bayes Theorem, by Reverend Thomas Bayes, is about **conditional probability**; the probability of A given that B occurred [deonoted as $P(A|B)$] 
+
++ In our Titanic example, the probability of a passenger having survived $S_k$ (where $S_{yes}$ = survived and $S_{no}$ = did not survive), given that it's predictor values are $x_1, x_2...x_p$ [denoted as $P(S_k|x_1,...x_p)$].
+
+---
+
+### Naive Bayes: An Overview
+
+Bayes Theorem looks like this:
+$$
+\begin{eqnarray*}
+  P(S_k|X) & = &\frac{P(X|S_k) \cdot P(S_k)}{P(X)}\\ \\
+\end{eqnarray*}
+$$
+
+where:
++ $P(S_k)$ The **prior probability** of the outcome - based on the training data, what is the probability of a person surviving or not? Our prior probability of survival is ~32% and the probability of not surviving is ~68%. 
++ $P(X)$ The probability of observing the predictor variables.
++ $P(X|S_k)$ The **conditional probability** or **likelihood**, For each class (*i.e.* survived and no survived), what is the probability of observing the predictors.
++ $P(S_k|X)$ The **posterior probability**. We update our prior probabilities with our observed information to find the posterior probability that an observation has class $S_k$. 
+
+---
+### Naive Bayes: An Overview
+
+$$
+\begin{eqnarray*}
+  P(S_{yes}|X) < P(S_{no}|X)\\ \\
+  P(S_{yes}|X) = P(S_{no}|X)\\ \\
+  P(S_{yes}|X) > P(S_{no}|X)\\ \\
+\end{eqnarray*}
+$$
+
++ Because we are comparing **between** classes, we don't need the denominator $P(X)$ as it will be the same in both classes. 
++ So what we actually end up calculating is proportional (not equal to) to $P(S_k|X)$
+
+---
+
+### Naive Bayes: Why Naive?
+
++ Naive Bayes makes the assumption that the predictor variables are all *conditionally independent* of each other
++ So $P(S_k|X)$ is proportional to $P(S_k)$ times the product of conditional probabilities of all predictors in the class.
+
+$$
+\begin{eqnarray*}
+  P(S_k|X) & ∝ & P(S_{k}) \cdot \prod_{i=1}^{n}P(x_i|S_k)\\ \\
+\end{eqnarray*}
+$$
+
+---
+### Calculating Likelihoods 
+
++ **Factor Variables** - use frequencies from the training data to calculate probabilities of the each predictor in each class (like our Titanic data). 
++ For factor variables, **probabilities = likelihoods**. 
+
+```{r message=FALSE, include=FALSE}
+class_freqs <- test %>% 
+  group_by(Survived, Class) %>%
+  summarise(freq_class = n())
+
+class_freqs$sum_class <- ifelse(class_freqs$Survived == "No", 
+                                sum(class_freqs$freq_class[1:4]), 
+                                sum(class_freqs$freq_class[5:8]))
+class_freqs$prop <- class_freqs$freq_class/class_freqs$sum_class
+
+g <- ggplot(class_freqs, aes(x = Class, y = freq_class, fill = Survived))+
+  facet_wrap(~Survived)+
+  geom_bar(stat="identity")+
+  geom_text(aes(label = paste0(class_freqs$freq_class, "/", 
+                               class_freqs$sum_class, "=", 
+                               signif(class_freqs$prop, 2))), size = 3, vjust = -0.5)+
+  ylab("Frequency")
+
+```
+
+```{r echo=F, dpi=300, fig.height=3.8}
+print(g)
+```
+
+---
+
+### Calculating Likelihoods 
+
++ **Continuous Variables** - use a probability density function (PDF), e.g. Gaussian, to calculate the **likelihood** of each predictor in a class. 
++ n.b. For continuous variable, **probabilities and likelihoods are different**
+
+```{r, echo = F, fig.height = 3.8, dpi=300}
+
+probability <- function(x) {
+    y <- dnorm(x, mean = 0, sd = 1)
+    y[x < 1] <- NA
+    return(y)
+}
+
+a <- ggplot(data.frame(x = c(-4, 4)), aes(x = x)) +
+        stat_function(fun = dnorm, colour = "orange", size = 1.5)+
+        stat_function(fun=probability, geom="area", fill="blue", alpha=0.2)+
+        ggtitle("Probability")
+
+b <- ggplot(data.frame(x = c(-4, 4)), aes(x = x)) +
+        stat_function(fun = dnorm, colour = "orange", size = 1.5)+
+        geom_point(aes(x = 1.05, y = 0.23), shape = 4, size = 5, colour = "blue")+
+  ggtitle("Likelihood")
+
+egg::ggarrange(a,b, nrow = 1)
+
+```
+
+---
+### Naive Bayes Classifier with factor variables - Titanic Survival
+
+There are lots of R packages to apply naive bayes (e1071, klaR, naivebayes etc...) but I like caret - common framework for many algorithms.
+
+```{r, results = "hide"}
+predictors <- names(train)[1:3] #Create response and predictor data
+
+x <- train[,predictors] #predictors
+y <- train$Survived #response
+
+train_control <- trainControl(method = "cv", number = 10) #set up 10 fold cross validation
+
+survival_mod1 <- train( #train the model
+  x = x,
+  y = y,
+  method = "nb", 
+  trControl = train_control
+)
+
+confusionMatrix(survival_mod1) #results of model on training data
+
+pred <- predict(survival_mod1, newdata = test) #make predictions
+
+confusionMatrix(pred, test$Survived) #assessing the classifier
+```
+
+---
+### Gaussian Naive Bayes - Iris dataset
+
++ Predict Species based on sepal length, sepal width, petal length and petal width. 
+
+```{r, results = "hide"}
+set.seed(1234)
+split <- createDataPartition(iris$Species, p = 0.8, list = FALSE)
+
+train <- iris[split, ]
+test <- iris[-split, ]
+
+c(nrow(train), nrow(test)) # print number of observations in test vs. train
+
+table(train$Species) %>% prop.table() # Proportions of Species 
+```
+
+---
+### Gaussian Naive Bayes - Iris dataset
+
++ Checking assumption of gaussian distribution
++ Are data normally distributed? Do we need to transform? Or should we use non-parametric kernel density distribution instead? (Actually we will try both by tuning the model)
+
+```{r, echo = F, fig.height = 3.8, dpi=300}
+
+train %>%
+  reshape2::melt(id.vars = "Species") %>%
+  ggplot(aes(value, colour = Species))+
+  geom_density(show.legend = FALSE)+
+  facet_wrap(~variable, scales = "free")
+
+```
+
+---
+### Gaussian Naive Bayes - Iris dataset
+
++ First, fit a model with 10 fold cross validation
+```{r, results = "hide"}
+predictors <- names(train)[1:4] #Create response and predictor data
+
+x <- train[,predictors] #predictors
+y <- train$Species #response
+
+train_control <- trainControl(method = "cv", number = 10) #set up 10 fold cross validation
+
+species_mod1 <- train( #train the model
+  x = x,
+  y = y,
+  method = "nb", 
+  trControl = train_control
+)
+
+confusionMatrix(species_mod1) #results of model on training data
+```
+
+---
+### Gaussian Naive Bayes - Iris dataset
+
++ Can we do any better? 
++ Tuning parameters =  **usekernal**, **adjust**, **fL**
+
+```{r, results = "hide", warning=FALSE}
+tune_params <- expand.grid( #define tuning parameters
+  usekernel = c(TRUE, FALSE),
+  fL = 0:5,
+  adjust = 0:5
+)
+
+# train model
+species_mod2 <- train(
+  x = x,
+  y = y,
+  method = "nb",
+  trControl = train_control,
+  tuneGrid = tune_params
+  )
+
+```
+---
+### Gaussian Naive Bayes - Iris dataset
+
+```{r, results = "hide", fig.height = 3.8}
+plot(species_mod2)
+```
+
++ Laplace smoother makes no difference
++ Non parametric Kernel with Bandwidth = 2 is best
+
+---
+### Gaussian Naive Bayes - Iris dataset
+
++ Results for best model
+
+```{r, results = "hide"}
+confusionMatrix(species_mod2) #results of model on training data
+                              # we have improved accuracy a tiny bit
+
+pred <- predict(species_mod2, newdata = test) #make predictions
+
+confusionMatrix(pred, test$Species) #assessing the classifier
+```
+
+---
+### Overcoming randomness of splitting data
+
++ Split data into test and training 10 times, and perform tuning & cross validation within each one
+
+```{r, results = "hide"}
+n <- nrow(iris) #number of observations in iris
+
+splits <- createDataPartition(iris$Species, p = 0.8, list = FALSE, times = 10) # create 10 splits
+train_control <- trainControl(method = "cv", number = 10) #set up 10 fold cross validation
+tune_params <- expand.grid( #define tuning parameters
+  usekernel = c(TRUE, FALSE),
+  fL = 0:5,
+  adjust = 0:5
+)
+```
+
+---
+
+### Overcoming randomness of splitting data
+
++ Split data into test and training 10 times, and perform tuning & cross validation within each one
+
+```{r, results = "hide"}
+all_mods <- lapply(seq_len(ncol(splits)), function(i){
+  
+  train <- iris[splits[,i], ] #split into i'th  test and train 
+  test <- iris[-splits[,i], ]
+  
+  predictors <- names(train)[1:4] #Create response and predictor data
+
+  x <- train[,predictors] #predictors
+  y <- train$Species #response
+
+  species_mod <- train( #fit models with tuning and cv
+      x = x,
+      y = y,
+      method = "nb",
+      trControl = train_control,
+      tuneGrid = tune_params
+      )
+  
+  pred <- predict(species_mod, newdata = test) #make predictions
+
+  confusionMatrix(pred, test$Species)$overall["Accuracy"] #assessing the classifier
+})
+```
+
+---
+
+### Overcoming randomness of splitting data
+
++ Split data into test and training 10 times, and perform tuning & cross validation within each one
+
+```{r, results = "hide"}
+
+mean(unlist(all_mods))
+sd(unlist(all_mods))
+
+```
+     
+---
+
+### Naive Bayes Pros and Cons
+
+.pull-left[
+
+#### Pros
++ Simple
++ Fast
++ Scales well
+
+]
+
+.pull-right[
+
+#### Cons
+
++ Assumes independence of variables
++ Assumes all variables are equally important
++ Not as accurate as other methods e.g. Random Forests
+
+]
+
+
+---
+
+### Extra reading/listening
+
+Confused? Go here:
++ A great conceptual overview [StatQuest](https://www.youtube.com/watch?v=O2L2Uv9pdDA)
+
+Feeling confident? Try this:
++ Use the caret *preProc* argument in **train()** to see if preprocessing the iris dataset improves model accuracy
++ Try using the [h2o](https://www.h2o.ai/wp-content/uploads/2018/01/RBooklet.pdf) package instead
+
+Just for fun: 
++ Listen to this [Data Skeptic podcast](https://player.fm/series/data-skeptic/spam-filtering-with-naive-bayes)
+
+Important!
++ Accuracy is not the best or only test for algorithm performance, explore more!
+
+### References
+
++ [UC Business Analytics Tutorial](https://uc-r.github.io/naive_bayes)
++ [Zhang, 2016](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4930525/)
+

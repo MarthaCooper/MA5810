@@ -1,0 +1,365 @@
+---
+title: "MA8510: Introduction to Data Mining"
+subtitle: "Collaborate Session 1"
+author: "Martha Cooper, PhD"
+institute: "JCU Masters of Data Science"
+date: "2019-22-10 (updated: `r Sys.Date()`)"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r xaringan-themer, include = FALSE}
+library(xaringanthemer)
+mono_accent(
+  base_color = "#045a8d",
+  header_font_google = google_font("Josefin Sans"),
+  text_font_google   = google_font("Montserrat", "300", "300i"),
+  code_font_google   = google_font("IBM Plex Mono")
+)
+```
+
+```{r, include = F}
+library(ggplot2)
+library(dplyr)
+library(factoextra)
+```
+
+## Housekeeping
+
++ Collaborate 1 = **Wednesdays 6-7pm** (Martha)
+
++ Collaborate 2 = **Thursdays 7-8pm** (Hongbin)
+
+For my Collaborate Sessions, you can get the **slides & R code** for each week here:
+
+**https://github.com/MarthaCooper/MA8510**
+
+.center[
+
+<img src="Pics/download_github.png" style="width: 50%" />
+
+]
+
+---
+
+## Introduction 
+
+Dr. Martha Cooper
+
+.pull-left[
+
++ I'm a research scientist at the **Australian Institute of Tropical Health and Medicine,  JCU**
+
++ Immunology & Bioinformatics
+
++ I use Data Science to understand how people's immune systems respond to parasite infections.
+
+]
+
+.pull-right[
+
+<img src="Pics/me.png" style="width: 70%" />
+
+]
+
+Email: **martha.cooper@jcu.edu.au**
+
+MA8510 Discussion board: **Saturday & Sunday**
+
+
+---
+
+## Subject: MA8510 Intro to Data Mining
+
+MA8510 Learning Outcomes
+
+1. **Overview of Data Mining and Examples (Today)**
+
+2. Unsupervised data mining methods e.g. clustering and outlier detection;
+
+3. Unsupervised and supervised techniques for dimensionality reduction;
+
+4. Supervised data mining methods for pattern classification;
+
+5. Apply these concepts to real data sets using R.
+
+---
+## Assignments
+
+*Time management is important!*
+
+**Assignment 1** due Sunday Week 3 (30%)
+
+**Assignment 2** due Sunday Week 5 (30%)
+
+**Assignment 3 (Capstone)** due Wednesday Week 7 (40%)
+
+The **Extension Policy** has been updated. Check the course outline for more information. 
+
+---
+
+## Today's Goals
+
++ Understand the major roles of data mining within the broader scope of data science
+ 
++ Classify the most common problems involved in data mining as: 
+
+.center[
+
+  **predictive** *vs* **descriptive**
+  
+  **unsupervised** *vs* **supervised tasks**
+
+]
+
++ Understand the main challenges for data mining in the context of Big Data analytics
+
+---
+## What is Data Mining?
+
+
+.left[
+
+### The process of discovering useful...
+
+]
+
+.center[
+
+####Patterns
+
+####Information
+
+####Knowledge
+
+####Predictive models
+
+]
+
+.right[
+
+###...from large-scale data.
+
+]
+
+---
+
+## Data Mining Methods
+
+.pull-left[
+
+**Supervised Learning**
+
+*What?* 
+
+Find patterns in our data that explain a dependent variable, $Y$
+
+*Why?* 
+
+Predict **future** values of the dependent variable, $Y$, using a set of independent variables, $X = {X_1,...,X_n}$
+
+*How?* 
+
+Regression, Classification
+
+]
+
+.pull-right[
+
+**Unsupervised Learning**
+
+*What?* 
+
+Identify patterns in our data without defining a dependent variable,  $Y$
+
+*Why?* 
+
+Describe interesting patterns in the **current** set of independent variables, $X = {X_1,...,X_n}$
+
+*How?* 
+
+Clustering, Outlier detection, Frequent Pattern Mining
+
+]
+---
+
+## Supervised Learning
+
++ The dependent variable, $Y$, is defined (data is "labelled")
++ Used in **predictive** data mining tasks
++ Training the model is called supervised learning
+
+.pull-left[
+
+**Classification**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width= 4, fig.height= 4, dpi=300}
+iris %>%
+  filter(Species %in% c("setosa", "versicolor")) %>%
+  ggplot(aes(x = Sepal.Width, y = Petal.Length, colour = Species, shape = Species))+
+   geom_point(size = 5)+
+   theme_minimal()+
+   theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        legend.position = "none")+
+  scale_colour_manual(values = c("#02818a", "#ef6548"))+
+  geom_segment(x = 2, y = 1, xend = 4.5, yend = 5, linetype = "dashed", colour = "black")+
+  annotate("text", x = 3.1, y = 3, label = "Control", angle = 49, size = 5, colour = "#ef6548")+
+  annotate("text", x = 3.3, y = 2.85, label = "Case", angle = 49, size = 5,  colour = "#02818a")+
+  geom_segment(aes(x = 4, y = 2, xend = 3.82, yend = 1.93),
+                  arrow = arrow(length = unit(0.5, "cm")), colour = "black")+
+  annotate("text", x = 4.2, y = 2, size = 5,  label = "classified \n as case")
+```
+
+
+]
+
+.pull-right[
+
+**Regression**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width= 4, fig.height= 4,  dpi=300}
+ggplot(mtcars, aes(x = mpg, y = wt))+
+  geom_point(size = 4, colour = "#02818a")+
+  geom_smooth(method = "lm", linetype = "dashed", colour = "black")+
+  theme_minimal()+
+  theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank())
+
+
+```
+
+]
+
+---
+
+## Supervised Learning
+
+A supervised learning workflow: 
+
+
+.center[
+
+<img src="Pics/supervised.png" style="width: 100%" />
+
+]
+
+*e.g.* Naive Bayes Classifiers, Logistic Regression
+---
+
+## Unsupervised Learning 
+
++ We don't know (or define) a dependant variable (data is "unlabeled")
++ Used in **descriptive** data mining tasks
++ Training the model is called unsupervised learning
+
+.pull-left[
+
+**Clustering, Outlier Detection**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.width= 6, fig.height= 5,  dpi=300}
+iris %>%
+  filter(Species %in% c("versicolor", "setosa")) %>%
+  ggplot(aes(x = Sepal.Width, y = Petal.Length))+
+   geom_point(size = 5, colour = "#02818a")+
+   theme_minimal()+
+   theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        legend.position = "none")+
+  stat_ellipse(aes(group = Species), level = 0.99)+
+  geom_point(aes(x = 4.7, y = 4.8), size = 5, colour = "#02818a")+ #add outlier
+  geom_segment(aes(x = 5, y = 5, xend = 4.75, yend = 4.85),
+                  arrow = arrow(length = unit(0.5, "cm")))+
+  annotate("text", x = 5, y = 5.1, size = 5,  label = "outlier")+
+  geom_segment(aes(x = 4, y = 2, xend = 3.82, yend = 1.93),
+                  arrow = arrow(length = unit(0.5, "cm")), colour = "black")+
+  annotate("text", x = 4.32, y = 2.1, size = 5,  label = "classified \n as Cluster 1")+
+  annotate("text", x = 3.5, y = 2.2, size = 6,  label = "Cluster 1")+
+  annotate("text", x = 2.2, y = 5.2, size = 6,  label = "Cluster 2")
+
+```
+
+]
+
+---
+
+## Unsupervised Learning
+
+An unsupervised learning workflow:
+
+.center[
+
+<img src="Pics/unsupervised.png" style="width: 100%" />
+
+]
+
+*e.g.* Principal Components Analysis (PCA), k-means clustering, hierarcical clustering
+
+---
+
+## Task 1: Supervised *vs* Unsupervised? 
+
+1. [Predictive Policing](https://www.sciencemag.org/news/2016/09/can-predictive-policing-prevent-crime-it-happens) - forecasting when and where a crime will happen
+
+2. Identifying subtypes of ovarian cancer based on [genetic data](Integrated genomic analyses of ovarian carcinoma)
+
+3. Automatic grading of students papers in some [Chinese schools](https://venturebeat.com/2018/05/28/chinese-schools-are-testing-ai-that-grades-papers-almost-as-well-as-teachers/)
+
+4. A facial recognition system to [identify gender](https://www.pewresearch.org/internet/2019/09/05/the-challenges-of-using-machine-learning-to-identify-gender-in-images/)
+
+5. Dividing a set of photographs of people into piles containing each individual
+
+---
+
+## Task 2: Challenges for data mining in the context of Big Data
+
+Any ideas?
+
+---
+
+## Task 2: Challenges for data mining in the context of Big Data
+
+- Heterogeneity
+- Complexity
+- Data Privacy and Security 
+- Storage
+- Computation Issues
+
+---
+
+## Extra reading/listening
+
+Get used to using stackoverflow:
+
++ This [stackoverflow thread](https://stackoverflow.com/questions/26182980/can-anyone-give-a-real-life-example-of-supervised-learning-and-unsupervised-lear)
+
+Still stuck? Go here:
++ This [Guru99 tutorial](https://www.guru99.com/supervised-vs-unsupervised-learning.html#:~:text=well%20%22labeled.%22-,Unsupervised%20learning%20is%20a%20machine%20learning%20technique%2C%20where%20you%20do,of%20unknown%20patterns%20in%20data.) 
+
+Want a challenge? Go here:
++ [Big Data Bioinformatics](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.0030116)
+
+Just for fun:
++ This [Data Learner's podcast](https://anchor.fm/data-learners/episodes/Supervised-and-unsupervised-learning-ebkgqt)
+
+
+---
+### References 
+
+**Slides**
++ xaringhan, xaringanthemer, remark.js, knitr, R Markdown
+
+
+
+
