@@ -478,6 +478,8 @@ Just for fun:
 Important!
 + Accuracy is not the best or only test for algorithm performance, explore more!
 
+---
+
 ### References
 
 + [UC Business Analytics Tutorial](https://uc-r.github.io/naive_bayes)
