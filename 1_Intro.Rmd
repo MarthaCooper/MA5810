@@ -345,7 +345,7 @@ Get used to using stackoverflow:
 + This [stackoverflow thread](https://stackoverflow.com/questions/26182980/can-anyone-give-a-real-life-example-of-supervised-learning-and-unsupervised-lear)
 
 Still stuck? Go here:
-+ This [Guru99 tutorial](https://www.guru99.com/supervised-vs-unsupervised-learning.html#:~:text=well%20%22labeled.%22-,Unsupervised%20learning%20is%20a%20machine%20learning%20technique%2C%20where%20you%20do,of%20unknown%20patterns%20in%20data.) 
++ This [Guru99 tutorial](https://www.guru99.com/supervised-vs-unsupervised-learning.html) 
 
 Want a challenge? Go here:
 + [Big Data Bioinformatics](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.0030116)
