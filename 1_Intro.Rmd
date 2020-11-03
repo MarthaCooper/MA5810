@@ -1,6 +1,6 @@
 ---
-title: "MA8510: Introduction to Data Mining"
-subtitle: "Collaborate Session 1"
+title: "MA5810: Introduction to Data Mining"
+subtitle: "Week 1; Collaborate Session 1; Intro"
 author: "Martha Cooper, PhD"
 institute: "JCU Masters of Data Science"
 date: "2019-22-10 (updated: `r Sys.Date()`)"
@@ -77,9 +77,9 @@ MA8510 Discussion board: **Saturday & Sunday**
 
 ---
 
-## Subject: MA8510 Intro to Data Mining
+## Subject: MA5810 Intro to Data Mining
 
-MA8510 Learning Outcomes
+MA5810 Learning Outcomes
 
 1. **Overview of Data Mining and Examples (Today)**
 

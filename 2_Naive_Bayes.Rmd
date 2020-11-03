@@ -1,6 +1,6 @@
 ---
-title: "MA8510: Introduction to Data Mining"
-subtitle: "Collaborate Session 2: Naive Bayes"
+title: "MA5810: Introduction to Data Mining"
+subtitle: "Week 2; Collaborate Session 1: Naive Bayes"
 author: "Martha Cooper, PhD"
 institute: "JCU Masters of Data Science"
 date: "2019-21-9 (updated: `r Sys.Date()`)"
@@ -50,9 +50,9 @@ For my Collaborate Sessions, you can get the **slides & R code** for each week h
 
 ---
 
-## Subject: MA8510 Intro to Data Mining
+## Subject: MA5810 Intro to Data Mining
 
-MA8510 Learning Outcomes
+MA5810 Learning Outcomes
 
 1. Overview of Data Mining and Examples
 
@@ -191,7 +191,7 @@ $$
 ---
 ### Calculating Likelihoods 
 
-+ **Factor Variables** - use frequencies from the training data to calculate probabilities of the each predictor in each class (like our Titanic data). 
++ **Factor Variables** - use *frequencies from the training data, or multinomial or Bernoulli distribution* (distribution for discrete variables), to calculate probabilities of the each predictor in each class (like our Titanic data). 
 + For factor variables, **probabilities = likelihoods**. 
 
 ```{r message=FALSE, include=FALSE}
@@ -222,7 +222,7 @@ print(g)
 
 ### Calculating Likelihoods 
 
-+ **Continuous Variables** - use a probability density function (PDF), e.g. Gaussian, to calculate the **likelihood** of each predictor in a class. 
++ **Continuous Variables** - use a *Gaussian or Kernal (non-parametric) density estimate*, to calculate the **likelihood** of each predictor in a class. 
 + n.b. For continuous variable, **probabilities and likelihoods are different**
 
 ```{r, echo = F, fig.height = 3.8, dpi=300}
