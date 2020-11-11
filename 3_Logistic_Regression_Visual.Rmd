@@ -101,9 +101,9 @@ $$
 Where
 + $Y$ is the dependent variable
 + $X$ is the independent variable
-+ $beta_0$ is the intercept ( $Y$ when $X = 0$)
-+ $beta_1$ is the slope of the regression line
-+ $epsilon$ is the error term
++ $\beta_0$ is the intercept ( $Y$ when $X = 0$)
++ $\beta_1$ is the slope of the regression line
++ $\epsilon$ is the error term
 
 ---
 
