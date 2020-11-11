@@ -395,9 +395,15 @@ confusionMatrix(as.factor(test_preds_lodds), test$default) #confusion matrix and
 **Slides**
 + xaringhan, xaringanthemer, remark.js, knitr, R Markdown
 
+---
 ## Note about knitting rmds
-library = pagedown
-function = chromeprint
 
-pagedown::chromeprint("my_rmd.Rmd")
+library = pagedown
+function = chrome_print
+
+```{r, eval=FALSE}
+pagedown::chrome_print("my_rmd.Rmd")
+```
+
+
 
