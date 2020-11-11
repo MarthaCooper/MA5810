@@ -296,7 +296,7 @@ summary(def_logmod1)$coef #interpret the coefficients
 ```{r, results = "hide"}
 lodds <- predict(def_logmod1, type = "link")#log odds
 
-preds_lodds = ifelse(lodds > 0, "Yes", "No") #using log odds
+preds_lodds <- ifelse(lodds > 0, "Yes", "No") #using log odds
 
 confusionMatrix(as.factor(preds_lodds), train$default) #confusion matrix and accuracy
 ```
@@ -350,10 +350,12 @@ x_range <- seq(from = min(train$balance), to = max(train$balance))#range of bala
 default_logits <- b0 + b1*x_range
 
 #calculate probabilities to plot
-default_probabilities <- exp(balance_logits)/(1 + exp(balance_logits))
+default_probabilities <- exp(default_logits)/(1 + exp(default_logits))
 
 probabilities_to_plot <- data.frame("balance" = x_range, 
                                     "probabilitiy_of_default" =  default_probabilities)
+
+head(probabilities_to_plot)
 
 ggplot(probabilities_to_plot, aes(x = balance, y = probabilitiy_of_default))+
   geom_line()+ #plot model
@@ -368,9 +370,10 @@ ggplot(probabilities_to_plot, aes(x = balance, y = probabilitiy_of_default))+
 
 + make predictions based on **test** data
 ```{r, results = "hide"}
+
 test_lodds <- predict(def_logmod1, newdata = test, type = "link") #logits
 
-test_preds_lodds = ifelse(test_lodds > 0, "Yes", "No") #using logits
+test_preds_lodds <- ifelse(test_lodds > 0, "Yes", "No") #using logits
 
 confusionMatrix(as.factor(test_preds_lodds), test$default) #confusion matrix and accuracy
 ```
@@ -391,3 +394,10 @@ confusionMatrix(as.factor(test_preds_lodds), test$default) #confusion matrix and
 
 **Slides**
 + xaringhan, xaringanthemer, remark.js, knitr, R Markdown
+
+## Note about knitting rmds
+library = pagedown
+function = chromeprint
+
+pagedown::chromeprint("my_rmd.Rmd")
+
