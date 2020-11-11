@@ -3,3 +3,4 @@ Collaborate sessions for JCU MA8510 Intro to Data Mining
 
 1. Intro to Data Mining
 2. Naive Bayes
+3. Logistic Regression
