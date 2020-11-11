@@ -1,0 +1,393 @@
+---
+title: "MA5810: Introduction to Data Mining"
+subtitle: "Week 3; Collaborate Session 1: Logistic Regression"
+author: "Martha Cooper, PhD"
+institute: "JCU Masters of Data Science"
+date: "2019-21-9 (updated: `r Sys.Date()`)"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r xaringan-themer, include = FALSE}
+library(xaringanthemer)
+mono_accent(
+  base_color = "#045a8d",
+  header_font_google = google_font("Josefin Sans"),
+  text_font_google   = google_font("Montserrat", "300", "300i"),
+  code_font_google   = google_font("IBM Plex Mono")
+)
+```
+
+```{r, include=FALSE,results = "hide"}
+library(dplyr)
+library(ggplot2)
+```
+
+
+## Housekeeping
+
++ Collaborate 1 = **Wednesdays 6-7pm** (Martha)
+
++ Collaborate 2 = **Thursdays 7-8pm** (Hongbin)
+
+For my Collaborate Sessions, you can get the **slides & R code** for each week here:
+
+**https://github.com/MarthaCooper/MA5810**
+
+.center[
+
+<img src="Pics/download_github.png" style="width: 50%" />
+
+]
+
+---
+
+## Assignment 1 Q1
+
+Explain **why** you chose the algorithm based on:
+
+1) The algorithm assumptions;
+
+2) How your data relates to those assumptions.
+
+The question is **not** about calculating a confusion matrix or ROC. You do not need to do that! 
+
+
+---
+
+## Subject: MA5810 Intro to Data Mining
+
+MA5810 Learning Outcomes
+
+1. Overview of Data Mining and Examples
+
+2. Unsupervised data mining methods e.g. clustering and outlier detection;
+
+3. Unsupervised and supervised techniques for dimensionality reduction;
+
+4. **Supervised data mining methods for pattern classification (Today = Logistic Regression)**;
+
+5. **Apply these concepts to real data sets using R (Today)**.
+
+---
+
+## Today's Goals
+
++ Understand the background behind Logistic Regression
+ 
++ Apply Logistic Regressions to real datasets using R
+
++ Understand the pros and cons of Logistic Regression
+
+---
+
+### Linear Regression Review 
+
++ The simple linear regression model is: 
+
+$$
+\begin{eqnarray*}
+  Y=\beta_0+\beta_1X+\epsilon 
+\end{eqnarray*}
+$$
+Where
++ $Y$ is the dependent variable
++ $X$ is the independent variable
++ $beta_0$ is the intercept ( $Y$ when $X = 0$)
++ $beta_1$ is the slope of the regression line
++ $epsilon$ is the error term
+
+---
+
+### Multiple Linear Regression Review
+
++ Multiple regression with $k$ independent variables 
+$$
+\begin{eqnarray*}
+Y = \beta_0+\beta_1X_{1}+\beta_2X_{2}+ \ldots+\beta_kX_{k}+\varepsilon
+\end{eqnarray*}
+$$
++ When interpreting one of the slopes in multiple regression model, we should take into account the effect of the other variables
+
++ For instance, $\beta_1$represents the change in $Y$ per 1 unit change in $X_1$ , holding other variables $(X_2 ,...,X_k )$ constant
+
+---
+
+### Generalised Linear Models & Classification
+
++ **GLM**: Appropriate when $Y$ isn't normally distributed but is in the exponential family of distributions
+
++ In classification where $Y$ is **binomial** (or multinomial) 
++ Given these features, does this sample belong to class A or B?
+
+$$
+\begin{eqnarray*}
+cancer \in \{yes, no\} \\
+credit\ card \in \{defalt, not\ default\} \\
+win\ \in \{yes, no\} \\
+drug\ \in \{survived, not\ survived\}
+\end{eqnarray*}
+$$
+
+**Logistic Regression** 
+
++ Binomial family Generalised Linear Model
++ Models the probability that $Y$ belongs to a particular category
+
+---
+
+### Logistic Regression
+
++ Binomial family Generalised Linear Model
++ Models the probability that a subject belongs to a particular category
+
+.center[
+
+<img src="Pics/log_reg.png" style="width: 100%" />
+
+]
+
+Problems with Linear Regression for Classification
++ Some values are outside [0,1]
++ For multinomial classification, the order and interval between classes would be considered important and meaningful
+
+---
+
+### The Logistic Model
+
+.pull-left[
+**Probability**
+]
+
+.pull-right[
+**Logit or Log Odds**
+]
+
+.center[
+
+<img src="Pics/logit.png" style="width: 100%" />
+
+]
+
+---
+
+### The Logistic Model
+
+Let $P(Y=1|X)$ be the probability that $Y=1$ given $X=(X_1,...,X_k)$
+
+**Probability**
+
+$$
+\begin{eqnarray*}
+P(Y=1|X_1, \ldots, X_k)=\frac{e^{\beta_0+\beta_1X_1+\ldots+\beta_kX_k}}{1+e^{\beta_0+\beta_1X_1+\ldots+\beta_kX_k}}
+\end{eqnarray*}
+$$
++ where $e$ is the Euler's number. 
+
++ This function means that $0 \leq P(Y=1|X) \leq 1$
+
+**Logit (Log Odds)**
+$$
+\begin{eqnarray*}
+\log(\frac{P(Y=1|X_1, \ldots, X_k)}{1-P(Y=1|X_1, \ldots, X_k)})=\beta_0+\beta_1X_1+\ldots+\beta_kX_k
+\end{eqnarray*}
+$$
++ Where log is the natural log, $\log_e$
+
++ Interpretation: $\beta_1$ represents the change in **log odds** of $Y$ per 1 unit change in $X_1$ , holding other variables $(X_2 ,...,X_k )$ constant
+
+---
+
+### Estimating the coefficients
+
+**Maximum Likelihood**
+.center[
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, dpi=300, fig.height = 3.8}
+data("iris")
+iris %>%
+  filter(Species %in% c("setosa", "versicolor")) %>%
+  ggplot(aes(x = Sepal.Width, y = Petal.Length, colour = Species, shape = Species))+
+   geom_point()+
+   theme(axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        legend.position = "none")+
+  scale_colour_manual(values = c("#02818a", "#ef6548"))+
+  geom_segment(x = 2, y = 1, xend = 4.5, yend = 5, linetype = "dashed", colour = "black")
+
+```
+
+]
+---
+
+### Logistic Regression Pros and Cons
+
+.pull-left[
+
+#### Pros
+
++ Identify which features are important for classification
++ Interpret how important each feature is for classification
+
+
+]
+
+.pull-right[
+
+#### Cons
+
++ Doesn't perform well if the decision boundary isn't linear
++ Two groups (although extensions make more possible)
+
+]
+
+---
+### Logistic Regression in R 
+
+```{r, results = "hide"}
+#load data
+library(ISLR, warn.conflicts = F, quietly = T) #for data
+library(caret, warn.conflicts = F, quietly = T) #for splitting the data
+library(dplyr, warn.conflicts = F, quietly = T) #for piping
+
+data("Default") #credit card default data from ISLR
+str(Default)
+
+#split into training (80%) and test
+split <- createDataPartition(Default$default, p = 0.8, list = F)
+
+train <- Default[split, ]
+test <- Default[-split, ]
+
+c(nrow(train), nrow(test)) # print number of observations in test vs. train
+
+table(train$default) %>% prop.table() # Proportions of people that defaulted and did not default
+
+#Train the model to predict the likelihood of default status based on credit card balance
+def_logmod1 <- glm(default ~ balance, data = train, family = "binomial") #fit model
+
+```
+
+---
+### Interpretting the coefficients
+
+```{r}
+summary(def_logmod1)$coef #interpret the coefficients
+```
+
++ $\beta_0$ : **Log odds**
+
++ $\beta_1$ : **Log odds ratio** 
+
+---
+
+### Making predictions in R
+
++ make predictions based on **training** data
+```{r, results = "hide"}
+lodds <- predict(def_logmod1, type = "link")#log odds
+
+preds_lodds = ifelse(lodds > 0, "Yes", "No") #using log odds
+
+confusionMatrix(as.factor(preds_lodds), train$default) #confusion matrix and accuracy
+```
+
+---
+
+### Plot the model
+
++ We are aiming for a plot like this: 
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, dpi=300, fig.height = 3.8}
+
+#save coefficients
+b0 <- def_logmod1$coef[1] #beta0
+b1 <- def_logmod1$coef[2] #beta1
+
+#calculate probabilities
+x_range <- seq(from = min(train$balance), to = max(train$balance))#range of balance for the x axis
+
+#calculate the logits
+default_logits <- b0 + b1*x_range
+
+#calculate probabilities to plot
+default_probabilities <- exp(default_logits)/(1 + exp(default_logits))
+
+probabilities_to_plot <- data.frame("balance" = x_range, 
+                                    "probabilitiy_of_default" =  default_probabilities)
+
+ggplot(probabilities_to_plot, aes(x = balance, y = probabilitiy_of_default))+
+  geom_line()+ #plot model
+  geom_point(data = train, aes(x = balance, 
+                               y = ifelse(default == "Yes", 1, 0),
+                               colour = default))+#add training data
+  xlab("Balance")+
+  ylab("Probability of Default")
+
+```
+---
+
+### Plot the model
+
+```{r eval=FALSE}
+def_logmod1$coef #look at coefs
+#save coefficients
+b0 <- def_logmod1$coef[1] #beta0
+b1 <- def_logmod1$coef[2] #beta1
+
+#calculate probabilities
+x_range <- seq(from = min(train$balance), to = max(train$balance))#range of balance for the x axis
+#calculate the logits
+default_logits <- b0 + b1*x_range
+
+#calculate probabilities to plot
+default_probabilities <- exp(balance_logits)/(1 + exp(balance_logits))
+
+probabilities_to_plot <- data.frame("balance" = x_range, 
+                                    "probabilitiy_of_default" =  default_probabilities)
+
+ggplot(probabilities_to_plot, aes(x = balance, y = probabilitiy_of_default))+
+  geom_line()+ #plot model
+  geom_point(data = train, aes(x = balance, 
+                               y = ifelse(default == "Yes", 1, 0),
+                               colour = default))+#add training data
+  xlab("Balance")
+```
+---
+
+### Making predictions in R
+
++ make predictions based on **test** data
+```{r, results = "hide"}
+test_lodds <- predict(def_logmod1, newdata = test, type = "link") #logits
+
+test_preds_lodds = ifelse(test_lodds > 0, "Yes", "No") #using logits
+
+confusionMatrix(as.factor(test_preds_lodds), test$default) #confusion matrix and accuracy
+```
+
+---
+
+### Extra reading
+
++ Chapter 4 of James *et al.*, [ISLR](http://faculty.marshall.usc.edu/gareth-james/ISL/) 
++ Chapter 10 of David Dalpiaz, [R for Statistical Learning](https://daviddalpiaz.github.io/r4sl/index.html)
+
+---
+
+### References
+
++ James *et al.*, [ISLR](http://faculty.marshall.usc.edu/gareth-james/ISL/)
++ David Dalpiaz, [R for Statistical Learning](https://daviddalpiaz.github.io/r4sl/index.html)
+
+**Slides**
++ xaringhan, xaringanthemer, remark.js, knitr, R Markdown
