@@ -1,0 +1,323 @@
+---
+title: "MA5810: Introduction to Data Mining"
+subtitle: "Week 4; Collaborate Session 1: Clustering"
+author: "Martha Cooper, PhD"
+institute: "JCU Masters of Data Science"
+date: "2019-21-9 (updated: `r Sys.Date()`)"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r xaringan-themer, include = FALSE}
+library(xaringanthemer)
+mono_accent(
+  base_color = "#045a8d",
+  header_font_google = google_font("Josefin Sans"),
+  text_font_google   = google_font("Montserrat", "300", "300i"),
+  code_font_google   = google_font("IBM Plex Mono")
+)
+```
+
+## Housekeeping
+
++ Collaborate 1 = **Wednesdays 6-7pm** (Martha)
+
++ Collaborate 2 = **Thursdays 7-8pm** (Hongbin)
+
+For my Collaborate Sessions, you can get the **slides & R code** for each week here:
+
+**https://github.com/MarthaCooper/MA5810**
+
+.center[
+
+<img src="Pics/download_github.png" style="width: 50%" />
+
+]
+
+---
+
+## Subject: MA5810 Intro to Data Mining
+
+MA5810 Learning Outcomes
+
+1. Overview of Data Mining and Examples
+
+2. **Unsupervised data mining methods e.g. clustering** and outlier detection;
+
+3. Unsupervised and supervised techniques for dimensionality reduction;
+
+4. Supervised data mining methods for pattern classification;
+
+5. **Apply these concepts to real data sets using R (Today)**.
+
+---
+
+## Today's Goals
+
++ Understand how *K*-means clustering works
+
++ Understand how to obtain the optimal value for *K*
+
++ Understand the pros and cons of *K*-means clustering
+ 
++ Apply *K*-means clustering on real datasets using R
+
+---
+
+## Unsupervised Learning
+
+A set of statistical tools to understand a set of features, $X_1,...Xp$, without having an associated response variable, $Y$, to predict.
+
+Data visualization & identification of subgroups
+
+### Clustering 
+
+A broad class of methods for discovering unknown subgroups (*clusters*) within data
+
+Why Cluster?
+
++ Bioinformatics - identify subtypes of cancer from gene expression data
++ Marketing- identify subgroups of shoppers who buy certain products
+
+---
+
+## Cluster Analysis
+
+**Clustering looks to find homogeneous subgroups among the observations**
+
+Observations should be:
++ similar to observations within the same cluster
++ different to observations in different cluster
+
+**How do we determine these similarities & differences?**
+
+Two approaches:
++ *K*-means clustering
++ Hierarchical Clustering
+
+---
+
+## *K*-Means Clustering
+
++ Partition a dataset into *K* distinct, non-overlapping clusters
+
++ We define the number of clusters, *K*, and the *K*-Means algorithm will assign each observation to *one* of those clusters
+
+.center[
+
+<img src="Pics/kmeans.png" style="width: 100%" />
+
+]
+
+---
+
+## How does *K*-means select the best clusters?
+
++ Minimize total **within cluster variation**
+
+.pull-left[
+
+<img src="Pics/kmeans_graph.jpg" style="width: 100%" />
+
+]
+
+.pull-right[
+
+<img src="Pics/kmeans_math.jpg" style="width: 100%" />
+
+]
+
+---
+
+## *K*-means clustering algorithm
+
+.pull-left[
+
+.center[
+
+<img src="Pics/kmeans_alg.png" style="width: 100%" />
+
+]
+
+]
+
+.pull-right[
+
+.center[
+
+<img src="Pics/kmeans_alg2.png" style="width: 100%" />
+
+]
+
+]
+
+
+---
+
+## Repeating *K*-means clustering 
+
+.pull-left[
+
++ Each solution depends on the *initial, random cluster assignment*
+
++ This is called the **local optimum**
+
++ Because of this, we should:
+
+    1.  Repeat *K*-means algorithm
+    2.  Select the iteration that minimizes *within cluster variation*
+
+]
+
+.right[
+
+<img src="Pics/choose_k.png" style="width: 50%" />
+
+]
+
+---
+
+## Choosing *K*
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, dpi=300, fig.height = 3.8}
+library(cluster, warn.conflicts = F, quietly = T) #clustering algorithms
+library(factoextra, warn.conflicts = F, quietly = T) #data visualisation
+
+dat <- iris[,1:4]
+dat <- na.omit(dat) #what to do if NA values?
+dat_scaled <- scale(dat) #why?
+total_sum_squares <- function(k){ #function to perform means and select total within cluster ss 
+  kmeans(dat, centers = k, nstart = 25)$tot.withinss
+}
+
+all_ks <- seq(1,20,1) #define a sequence of values for k
+
+choose_k <- sapply(seq_along(all_ks), function(i){ #apply total_sum_squares to all values of k
+  total_sum_squares(all_ks[i])
+})
+
+choose_k_plot <- data.frame(k = all_ks, within_cluster_variation = choose_k)
+
+ggplot(choose_k_plot, aes(x = k, y = within_cluster_variation))+
+  geom_line(colour = "#045a8d")+
+  geom_point()+
+  xlab("Number of Clusters (K)")+
+  ylab("Within Cluster Variation")+
+  theme_minimal()
+```
+
+---
+
+### Pros and Cons
+
+.pull-left[
+
+#### Pros
+
++ Scales to large data sets well
++ Doesn't make any assumptions about data distribution
++ Generalizes to clusters of different shapes and sizes
+
+]
+
+.pull-right[
+
+#### Cons
+
++ Subjective
++ Interpretation requires domain knowledge
++ Exploratory data analysis
++ Difficult to assess results
+
+]
+
+---
+
+## *K*-means clustering in R
+
+```{r, eval=FALSE}
+library(cluster, warn.conflicts = F, quietly = T) #clustering algorithms
+library(factoextra, warn.conflicts = F, quietly = T) #data visualization
+
+head(iris) #data
+
+dat <- iris[,1:4]
+dat <- na.omit(dat) #what to do if NA values?
+dat_scaled <- scale(dat) #why?
+
+set.seed(6) #why?
+kmeans_res <- kmeans(dat, centers = 3, nstart = 25) #centers? nstart?
+str(kmeans_res)
+
+fviz_cluster(kmeans_res, data = dat)
+```
+
+---
+
+## Interpretation using domain knowledge
+
++ What do the clusters represent? 
+
+```{r, eval=FALSE}
+fviz_cluster(kmeans_res, #set up plot
+             data = dat, 
+             geom = "point", # only shows points and not labels 
+             shape = 19,# define one shape for all clusters (a circle)
+             alpha = 0)+ # make circles see-though
+  geom_point(aes(colour = as.factor(kmeans_res$cluster), 
+                 shape = iris$Species))+ #colour by species
+  ggtitle("Comparing Clusters and Iris Species") #add a title
+```
+
++ Conclusion?
+
+---
+
+## Choosing *K* in R
+
+```{r, eval=FALSE}
+total_sum_squares <- function(k){ #perform kmeans & calculate ss 
+  kmeans(dat, centers = k, nstart = 25)$tot.withinss
+}
+
+all_ks <- seq(1,20,1) #define a sequence of values for k
+
+choose_k <- sapply(seq_along(all_ks), function(i){ #apply to all values of k
+  total_sum_squares(all_ks[i])
+})
+
+choose_k_plot <- data.frame(k = all_ks,  # dataframe for plotting
+                            within_cluster_variation = choose_k)
+
+ggplot(choose_k_plot, aes(x = k, # plot
+                          y = within_cluster_variation))+
+  geom_point()+
+  geom_line()+
+  xlab("Number of Clusters (K)")+
+  ylab("Within Cluster Variation")
+```
+
+---
+
+### Extra reading
+
++ Chapter 10.3 of James *et al.*, [ISLR](http://faculty.marshall.usc.edu/gareth-james/ISL/) 
+
++ STHDA [Factoextra R Package Guide](http://www.sthda.com/english/wiki/factoextra-r-package-easy-multivariate-data-analyses-and-elegant-visualization#:~:text=factoextra%20is%20an%20R%20package,exploratory%20multivariate%20data%20analyses%2C%20including%3A&text=Factor%20Analysis%20of%20Mixed%20Data,both%20quantitative%20and%20qualitative%20variables.)
+---
+
+### References
+
++ James *et al.*, [ISLR](http://faculty.marshall.usc.edu/gareth-james/ISL/)
+
+
+**Slides**
++ xaringhan, xaringanthemer, remark.js, knitr, R Markdown
