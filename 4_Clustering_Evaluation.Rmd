@@ -254,10 +254,10 @@ dat <- na.omit(dat) #what to do if NA values?
 dat_scaled <- scale(dat) #why?
 
 set.seed(6) #why?
-kmeans_res <- kmeans(dat, centers = 3, nstart = 25) #centers? nstart?
+kmeans_res <- kmeans(dat_scaled, centers = 3, nstart = 25) #centers? nstart?
 str(kmeans_res)
 
-fviz_cluster(kmeans_res, data = dat)
+fviz_cluster(kmeans_res, data = dat_scaled)
 ```
 
 ---
@@ -268,7 +268,7 @@ fviz_cluster(kmeans_res, data = dat)
 
 ```{r, eval=FALSE}
 fviz_cluster(kmeans_res, #set up plot
-             data = dat, 
+             data = dat_scaled, 
              geom = "point", # only shows points and not labels 
              shape = 19,# define one shape for all clusters (a circle)
              alpha = 0)+ # make circles see-though
@@ -285,7 +285,7 @@ fviz_cluster(kmeans_res, #set up plot
 
 ```{r, eval=FALSE}
 total_sum_squares <- function(k){ #perform kmeans & calculate ss 
-  kmeans(dat, centers = k, nstart = 25)$tot.withinss
+  kmeans(dat_scaled, centers = k, nstart = 25)$tot.withinss
 }
 
 all_ks <- seq(1,20,1) #define a sequence of values for k
@@ -296,7 +296,7 @@ choose_k <- sapply(seq_along(all_ks), function(i){ #apply to all values of k
 
 choose_k_plot <- data.frame(k = all_ks,  # dataframe for plotting
                             within_cluster_variation = choose_k)
-
+head(choose_k_plot)
 ggplot(choose_k_plot, aes(x = k, # plot
                           y = within_cluster_variation))+
   geom_point()+
