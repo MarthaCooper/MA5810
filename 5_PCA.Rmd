@@ -1,0 +1,265 @@
+---
+title: "MA5810: Introduction to Data Mining"
+subtitle: "Week 5; Collaborate Session 1: Principal Components Analysis"
+author: "Martha Cooper, PhD"
+institute: "JCU Masters of Data Science"
+date: "2019-21-9 (updated: `r Sys.Date()`)"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r xaringan-themer, include = FALSE}
+library(xaringanthemer)
+mono_accent(
+  base_color = "#045a8d",
+  header_font_google = google_font("Josefin Sans"),
+  text_font_google   = google_font("Montserrat", "300", "300i"),
+  code_font_google   = google_font("IBM Plex Mono")
+)
+```
+
+## Housekeeping
+
++ Collaborate 1 = **Wednesdays 6-7pm** (Martha)
+
++ Collaborate 2 = **Thursdays 7-8pm** (Hongbin)
+
+For my Collaborate Sessions, you can get the **slides & R code** for each week here:
+
+**https://github.com/MarthaCooper/MA5810**
+
+.center[
+
+<img src="Pics/download_github.png" style="width: 50%" />
+
+]
+
+---
+
+## Assessments
+
+Next week's collaborate session 1 will focus on:
+
++ Common mistakes made in Assessment 1  
++ Clarification for the Capstone project (Assessment 3)
+
+---
+## Subject: MA5810 Intro to Data Mining
+
+MA5810 Learning Outcomes
+
+1. Overview of Data Mining and Examples
+
+2. Unsupervised data mining methods e.g. clustering and outlier detection;
+
+3. **Unsupervised** and supervised **techniques for dimensionality reduction (Today = PCA)**;
+
+4. Supervised data mining methods for pattern classification;
+
+5. **Apply these concepts to real data sets using R (Today)**.
+
+---
+
+## Today's Goals
+
++ Understand the background behind Principal Components Analysis (PCA)
+
++ Understand the pros and cons of PCA
+ 
++ Apply PCA to real datasets using R
+
+
+---
+
+## Unsupervised Learning
+
+A set of statistical tools to understand a set of features, $X_1,...Xp$, without having an associated response variable, $Y$, to predict.
+
+Data visualization, identification of subgroups & dimensionality reduction
+
+### Principal Components Analysis (PCA)
+
+A technique for summarizing a large set of variables into a smaller number of representative variables that collectively explain most of the variation in the original set. 
+
+*PCA looks to find a low-dimensional representation of the observations that explain a good fraction of the variance*
+
+---
+
+## Why reduce dimensions?
+
+.pull-left[
+
+**Problems:**
+
++ Correlated variables
+
++ A large number of variables
+
+.center[
+
+<img src="Pics/pca_probs.jpg" style="width: 100%" />
+
+]
+
+]
+
+.pull-right[
+
+**Solutions:**
+
++ A new set of variables that are *uncorrelated* and *explain as much variance as possible*
+
++ *The best combination* of all the variables that *explains the original data set with less variables*
+
+.center[
+
+<img src="Pics/pca_vis.jpg" style="width: 60%" />
+
+]
+
+
+]
+
+---
+## Finding the Prinicpal Components
+
++ Transform the data to a small number of **interesting** dimensions
+
++ **Interesting** = **Highest Variance**
+
++ These dimensions (**Principal Components**) are:
+
+.pull-left[
+    
+##### 1. (Normalised) Linear combinations of the original variables
+
+.center[
+
+<img src="Pics/PC1.jpg" style="width: 120%" />
+
+]
+
+]
+
+.pull-right[
+
+##### 2. Uncorrelated
+    
+.center[
+
+<img src="Pics/pc_orth.jpg" style="width: 70%" />
+
+]   
+]
+
+---
+
+## Finding the Prinicipal Components
+
++ How do we choose the loadings that cause PC1 to explain the most variance in the data? 
+
+.center[
+
+<img src="Pics/pc_proj.jpg" style="width: 80%" />
+
+] 
+
+---
+## Finding the Prinicipal Components
+
++ How do we choose PC2 - the second biggest source of variation & uncorrelated?
+
+.center[
+
+<img src="Pics/pc2.jpg" style="width: 80%" />
+
+] 
+
+---
+
+### Pros and Cons
+
+.pull-left[
+
+#### Pros
+
++ Reduce number of predictors
++ Reduce number of correlated predictors 
++ Identify subgroups in our dataset
++ Identify outliers
+
+]
+
+.pull-right[
+
+#### Cons
+
++ Subjective
++ Exploratory data analysis
++ Difficult to assess results
+
+]
+
+---
+
+## PCA in R
+```{r, eval = F}
+
+head(iris) #data
+dat <- iris[ ,1:4] # remove Species column
+
+pc <- prcomp(dat, center = T, scale = T) #why center? why scale?
+
+pc$rotation #loadings - matrix of variable loadings
+pc$x #scores - the coordinates of the observations on each PC
+
+```
+
+---
+
+## Visualising PCA in R
+
+```{r, eval = F}
+library(factoextra)
+
+fviz_screeplot(pc) #scree plot - proportion of variance explained
+# How might we choose how many PCs to keep? 
+
+fviz_pca_ind(pc) #PC1 vs PC2
+
+fviz_pca_biplot(pc) #biplot
+```
+
+---
+
+## Interpretting PCA with domain knowledge
+
+```{r, eval = F}
+fviz_pca_ind(pc, 
+             habillage = iris$Species,
+             addEllipses = TRUE)
+```
+
+---
+
+### Extra reading
+
++ Chapter 10.2 of James *et al.*, [ISLR](http://faculty.marshall.usc.edu/gareth-james/ISL/) 
+
+
+---
+
+### References
+
++ James *et al.*, [ISLR](http://faculty.marshall.usc.edu/gareth-james/ISL/)
+
+**Slides**
++ xaringhan, xaringanthemer, remark.js, knitr, R Markdown
