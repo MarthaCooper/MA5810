@@ -34,9 +34,9 @@ library(factoextra)
 
 ## Housekeeping
 
-+ Collaborate 1 = **Wednesdays 6-7pm** (Martha)
++ Collaborate 1 = **Tuesday 6.45-6pm** (Martha)
 
-+ Collaborate 2 = **Thursdays 7-8pm** (Hongbin)
++ Collaborate 2 = **Thursdays 6.45-6pm** (Martina)
 
 For my Collaborate Sessions, you can get the **slides & R code** for each week here:
 
@@ -48,32 +48,7 @@ For my Collaborate Sessions, you can get the **slides & R code** for each week h
 
 ]
 
----
-
-## Introduction 
-
-Dr. Martha Cooper
-
-.pull-left[
-
-+ I'm a research scientist at the **Australian Institute of Tropical Health and Medicine,  JCU**
-
-+ Immunology & Bioinformatics
-
-+ I use Data Science to understand how people's immune systems respond to parasite infections.
-
-]
-
-.pull-right[
-
-<img src="Pics/me.png" style="width: 70%" />
-
-]
-
-Email: **martha.cooper@jcu.edu.au**
-
-MA8510 Discussion board: **Saturday & Sunday**
-
+**Note:** Weekly content will be updated on Tuesday each week
 
 ---
 
@@ -83,11 +58,11 @@ MA5810 Learning Outcomes
 
 1. **Overview of Data Mining and Examples (Today)**
 
-2. Unsupervised data mining methods e.g. clustering and outlier detection;
+2. Unsupervised data mining methods *e.g.* clustering and outlier detection;
 
-3. Unsupervised and supervised techniques for dimensionality reduction;
+3. Unsupervised and supervised techniques for dimensionality reduction *e.g.* PCA;
 
-4. Supervised data mining methods for pattern classification;
+4. Supervised data mining methods for classification *e.g.* Naive Bayes, LDA;
 
 5. Apply these concepts to real data sets using R.
 
@@ -96,13 +71,15 @@ MA5810 Learning Outcomes
 
 *Time management is important!*
 
-**Assignment 1** due Sunday Week 3 (30%)
+**Quiz 1** due 13/07/21 (No credit)
 
-**Assignment 2** due Sunday Week 5 (30%)
+**Assessment 1** due 25/07/21
 
-**Assignment 3 (Capstone)** due Wednesday Week 7 (40%)
+**Assessment 2** due 08/08/21
 
-The **Extension Policy** has been updated. Check the course outline for more information. 
+**Assessment 3 (Capstone)** due 18/08/21
+
+Check the course outline for the **Extension Policy** and more information. 
 
 ---
 
@@ -120,7 +97,7 @@ The **Extension Policy** has been updated. Check the course outline for more inf
 
 ]
 
-+ Understand the main challenges for data mining in the context of Big Data analytics
++ Learn RMarkdown
 
 ---
 ## What is Data Mining?
@@ -186,7 +163,7 @@ Describe interesting patterns in the **current** set of independent variables, $
 
 *How?* 
 
-Clustering, Outlier detection, Frequent Pattern Mining
+Clustering, Outlier detection
 
 ]
 ---
@@ -308,13 +285,13 @@ An unsupervised learning workflow:
 
 ---
 
-## Task 1: Supervised *vs* Unsupervised? 
+## Task: Supervised *vs* Unsupervised? 
 
 1. [Predictive Policing](https://www.sciencemag.org/news/2016/09/can-predictive-policing-prevent-crime-it-happens) - forecasting when and where a crime will happen
 
 2. Identifying subtypes of ovarian cancer based on [genetic data](Integrated genomic analyses of ovarian carcinoma)
 
-3. Automatic grading of students papers in some [Chinese schools](https://venturebeat.com/2018/05/28/chinese-schools-are-testing-ai-that-grades-papers-almost-as-well-as-teachers/)
+3. Automatic grading of students papers in some [schools in china](https://venturebeat.com/2018/05/28/chinese-schools-are-testing-ai-that-grades-papers-almost-as-well-as-teachers/)
 
 4. A facial recognition system to [identify gender](https://www.pewresearch.org/internet/2019/09/05/the-challenges-of-using-machine-learning-to-identify-gender-in-images/)
 
@@ -322,40 +299,154 @@ An unsupervised learning workflow:
 
 ---
 
-## Task 2: Challenges for data mining in the context of Big Data
+## R Markdown 
 
-Any ideas?
+#### R Markdown provides a notebook to:
+
+1. Save and execute code
+    - Use an R Markdown file to load data, run analyses, connect to databases
+2. Generate high quality reports to share with an audience
+    - Publish as a html, pdf, word file, slides, book, website etc... 
+
+.center[
+
+<img src="Pics/knitr.png" style="width: 70%" />
+
+]
 
 ---
 
-## Task 2: Challenges for data mining in the context of Big Data
+## R Markdown
 
-- Heterogeneity
-- Complexity
-- Data Privacy and Security 
-- Storage
-- Computation Issues
+### Why use R Markdown
+
++ Reproducible
++ Readable (contains text + code)
++ Share-able
++ Easy to use with version control (*e.g.* git)
+
+---
+
+## R Markdown
+
+#### R markdown files have 3 types of content
+
+.center[
+
+<img src="Pics/rmd.png" style="width: 70%" />
+
+]
+
+---
+
+## R Markdown
+
+#### Knitting with RStudio
+
+.pull-left[
+
+##### Point and Click
+
+.center[
+
+<img src="Pics/knit_click.png" style="width: 50%" />
+
+]
+
+]
+
+.pull-right[
+
+##### In code
+
+```{r, eval = F}
+# From RStudio
+
+rmarkdown::render("my_rmd.Rmd") #knit to pdf, html
+
+pagedown::chrome_print(input = "my_rmd.Rmd") # my favourite - renders from html = prettier 
+
+```
+
+]
+---
+
+## Rmarkdown
+
+#### How knitting works
+
+.center[
+
+<img src="Pics/knit_how.png" style="width: 70%" />
+
+]
+
+---
+
+## R Markdown
+
+#### Rendering text with Rmarkdown
+
+
+.pull-left[
+
+.center[
+
+<img src="Pics/knit_text.png" style="width: 70%" />
+
+]
+
+]
+
+
+.pull-right[
+
+# Heading 1
+## Heading 2
+### Heading 3
+
+- Bullet pointed list
+    - Sub-point list
+
+1. Numbered list
+    1. Sub numbered list
+
+**Bold**, *Italic* 
+
+[link](www.mylink.com)
+
+]
+
+
+---
+
+
+## R Markdown
+
+#### More information
+
++ [RStudio website](https://rmarkdown.rstudio.com/lesson-1.html)
+
++ [R Markdown Cheatsheet](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)
+
 
 ---
 
 ## Extra reading/listening
 
-Get used to using stackoverflow:
 
 + This [stackoverflow thread](https://stackoverflow.com/questions/26182980/can-anyone-give-a-real-life-example-of-supervised-learning-and-unsupervised-lear)
-
-Still stuck? Go here:
 + This [Guru99 tutorial](https://www.guru99.com/supervised-vs-unsupervised-learning.html) 
-
-Want a challenge? Go here:
 + [Big Data Bioinformatics](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.0030116)
-
-Just for fun:
 + This [Data Learner's podcast](https://anchor.fm/data-learners/episodes/Supervised-and-unsupervised-learning-ebkgqt)
++ 
 
 
 ---
 ### References 
+
+**R Markdown**
++ [RStudio website](https://rmarkdown.rstudio.com/lesson-1.html)
 
 **Slides**
 + xaringhan, xaringanthemer, remark.js, knitr, R Markdown
