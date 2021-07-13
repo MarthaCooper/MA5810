@@ -3,7 +3,7 @@ title: "MA5810: Introduction to Data Mining"
 subtitle: "Week 2; Collaborate Session 1: Naive Bayes"
 author: "Martha Cooper, PhD"
 institute: "JCU Masters of Data Science"
-date: "2019-21-9 (updated: `r Sys.Date()`)"
+date: "`r Sys.Date()`"
 output:
   xaringan::moon_reader:
     css: xaringan-themer.css
@@ -34,13 +34,13 @@ library(ggplot2)
 
 ## Housekeeping
 
-+ Collaborate 1 = **Wednesdays 6-7pm** (Martha)
++ Collaborate 1 = **Tuesday 6.45-8pm** (Martha)
 
-+ Collaborate 2 = **Thursdays 7-8pm** (Hongbin)
++ Collaborate 2 = **Thursday 6.45-8pm** (Martina)
 
 For my Collaborate Sessions, you can get the **slides & R code** for each week here:
 
-**https://github.com/MarthaCooper/MA8510**
+**https://github.com/MarthaCooper/MA5810**
 
 .center[
 
@@ -110,8 +110,9 @@ counts_to_cases <- function(x){
 
 case_titanic <- counts_to_cases(as.data.frame(Titanic))
 
-#head(case_titanic, 3)
-#dim(case_titanic) 
+head(case_titanic, 3)
+str(case_titanic)
+dim(case_titanic) 
 ```
 .pull-right[
 
@@ -274,12 +275,17 @@ pred <- predict(survival_mod1, newdata = test) #make predictions
 confusionMatrix(pred, test$Survived) #assessing the classifier
 ```
 
+78% percent of the time, the model predicted the correct class
 ---
 ### Gaussian Naive Bayes - Iris dataset
 
 + Predict Species based on sepal length, sepal width, petal length and petal width. 
 
 ```{r, results = "hide"}
+head(iris)
+str(iris)
+levels(iris$Species)
+
 set.seed(1234)
 split <- createDataPartition(iris$Species, p = 0.8, list = FALSE)
 
@@ -382,7 +388,6 @@ confusionMatrix(pred, test$Species) #assessing the classifier
 + Split data into test and training 10 times, and perform tuning & cross validation within each one
 
 ```{r, results = "hide"}
-n <- nrow(iris) #number of observations in iris
 
 splits <- createDataPartition(iris$Species, p = 0.8, list = FALSE, times = 10) # create 10 splits
 train_control <- trainControl(method = "cv", number = 10) #set up 10 fold cross validation
@@ -484,4 +489,7 @@ Important!
 
 + [UC Business Analytics Tutorial](https://uc-r.github.io/naive_bayes)
 + [Zhang, 2016](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4930525/)
+
+**Slides**
++ xaringhan, xaringanthemer, remark.js, knitr, R Markdown
 
