@@ -3,7 +3,7 @@ title: "MA5810: Introduction to Data Mining"
 subtitle: "Week 3; Collaborate Session 1: Logistic Regression"
 author: "Martha Cooper, PhD"
 institute: "JCU Masters of Data Science"
-date: "2019-21-9 (updated: `r Sys.Date()`)"
+date: "`r Sys.Date()`"
 output:
   xaringan::moon_reader:
     css: xaringan-themer.css
@@ -34,9 +34,9 @@ library(ggplot2)
 
 ## Housekeeping
 
-+ Collaborate 1 = **Wednesdays 6-7pm** (Martha)
++ Collaborate 1 = **Tuesday 6.45-8pm** (Martha)
 
-+ Collaborate 2 = **Thursdays 7-8pm** (Hongbin)
++ Collaborate 2 = **Thursday 6.45-8pm** (Martina)
 
 For my Collaborate Sessions, you can get the **slides & R code** for each week here:
 
@@ -47,18 +47,6 @@ For my Collaborate Sessions, you can get the **slides & R code** for each week h
 <img src="Pics/download_github.png" style="width: 50%" />
 
 ]
-
----
-
-## Assignment 1 Q1
-
-Explain **why** you chose the algorithm based on:
-
-1) The algorithm assumptions;
-
-2) How your data relates to those assumptions.
-
-The question is **not** about calculating a confusion matrix or ROC. You do not need to do that! 
 
 
 ---
@@ -105,6 +93,14 @@ Where
 + $\beta_1$ is the slope of the regression line
 + $\epsilon$ is the error term
 
+$\beta_0$ and $\beta_1$ are estimated by **Ordinary Least Squares**
++ Minimizing the sum of the squared distances between the observed values, $y$, and the fitted values, $\hat{y}$.  (*i.e.* residuals)
+
+$$
+\begin{eqnarray*}
+\sum_{i=1}^n (y_i -(\beta_0-\beta_1x_i))^2
+\end{eqnarray*}
+$$
 ---
 
 ### Multiple Linear Regression Review
@@ -227,6 +223,9 @@ iris %>%
 ```
 
 ]
+
++ Estimate coefficients such that the predicted probability class membership is as close as possible to the individuals observed class membership. 
+
 ---
 
 ### Logistic Regression Pros and Cons
@@ -263,6 +262,7 @@ data("Default") #credit card default data from ISLR
 str(Default)
 
 #split into training (80%) and test
+set.seed(123)
 split <- createDataPartition(Default$default, p = 0.8, list = F)
 
 train <- Default[split, ]
@@ -284,9 +284,35 @@ def_logmod1 <- glm(default ~ balance, data = train, family = "binomial") #fit mo
 summary(def_logmod1)$coef #interpret the coefficients
 ```
 
-+ $\beta_0$ : **Log odds**
++ $\beta_0$ : the **log odds** of a person defaulting if they have a credit card balance of 0 dollars = -10.649
++ $\beta_1$ : **Log odds ratio** -for a one unit increase in balance, the log odds of a person defaulting increases by 0.00549
 
-+ $\beta_1$ : **Log odds ratio** 
+```{r}
+exp(def_logmod1$coeff) #exponentiate the coefficients to see the odds ratio 
+# odds of defaulting increase by 0.55% for every $1
+```
+
+---
+
+### Making predictions - theory
+
++ Once we have the coefficients, we can calculate the probability of default for any credit card balance
+```{r}
+summary(def_logmod1)$coef
+```
+
++ For example, if the balance is 1000 dollars
+$$
+\begin{eqnarray*}
+\frac{e^{-10.64+0.0054*1000}}{1+e^{-10.64+0.0054*1000}}= 0.0057 = 0.57\%
+\end{eqnarray*}
+$$
++ For example, if the balance is 2000 dollars
+$$
+\begin{eqnarray*}
+\frac{e^{-10.6513+0.0057*2000}}{1+e^{-10.6513+0.0057*2000}}= 0.57 = 57\%
+\end{eqnarray*}
+$$
 
 ---
 
@@ -296,13 +322,18 @@ summary(def_logmod1)$coef #interpret the coefficients
 ```{r, results = "hide"}
 lodds <- predict(def_logmod1, type = "link")#log odds
 
-preds_lodds <- ifelse(lodds > 0, "Yes", "No") #using log odds
+probs <- predict(def_logmod1, type = "response") #probabilities
 
-confusionMatrix(as.factor(preds_lodds), train$default) #confusion matrix and accuracy
+preds_lodds = ifelse(lodds > 0, "Yes", "No") #using log odds
+
+preds_probs = ifelse(probs > 0.5, "Yes", "No") #using probabilities
+
+all(preds_lodds == preds_probs) #prove to yourself these are the same thing
+
+confusionMatrix(as.factor(preds_probs), train$default) #confusion matrix and accuracy
 ```
 
 ---
-
 ### Plot the model
 
 + We are aiming for a plot like this: 
@@ -334,8 +365,8 @@ ggplot(probabilities_to_plot, aes(x = balance, y = probabilitiy_of_default))+
   ylab("Probability of Default")
 
 ```
----
 
+---
 ### Plot the model
 
 ```{r eval=FALSE}
@@ -380,6 +411,27 @@ confusionMatrix(as.factor(test_preds_lodds), test$default) #confusion matrix and
 
 ---
 
+### Multiple Logistic Regression & Confounders
+
++ **ISLR 4.3.4**
+
++ Combine what you know about 
+    + Multiple linear regression
+    + Logistic regression
+    
++ "Results obtained form one predictor may be quite different from those obtained using multiple predictors, especially when predictors are correlated." 
+
+---
+### Goodness of Fit
+
++ Deviance - the deviance of the fitted logistic model from an ideal model that perfectly fits the data
+
++ AIC - considers the deviance and the number of parameters 
+
++ Compare two models using an ANOVA
+
+---
+
 ### Extra reading
 
 + Chapter 4 of James *et al.*, [ISLR](http://faculty.marshall.usc.edu/gareth-james/ISL/) 
@@ -394,16 +446,5 @@ confusionMatrix(as.factor(test_preds_lodds), test$default) #confusion matrix and
 
 **Slides**
 + xaringhan, xaringanthemer, remark.js, knitr, R Markdown
-
----
-## Note about knitting rmds
-
-library = pagedown
-function = chrome_print
-
-```{r, eval=FALSE}
-pagedown::chrome_print("my_rmd.Rmd")
-```
-
 
 
