@@ -3,7 +3,7 @@ title: "MA5810: Introduction to Data Mining"
 subtitle: "Week 4; Collaborate Session 1: Clustering"
 author: "Martha Cooper, PhD"
 institute: "JCU Masters of Data Science"
-date: "2019-21-9 (updated: `r Sys.Date()`)"
+date: "`r Sys.Date()`"
 output:
   xaringan::moon_reader:
     css: xaringan-themer.css
@@ -28,9 +28,9 @@ mono_accent(
 
 ## Housekeeping
 
-+ Collaborate 1 = **Wednesdays 6-7pm** (Martha)
++ Collaborate 1 = **Tuesday 6.45-8pm** (Martha)
 
-+ Collaborate 2 = **Thursdays 7-8pm** (Hongbin)
++ Collaborate 2 = **Thursday 6.45-8pm** (Martina)
 
 For my Collaborate Sessions, you can get the **slides & R code** for each week here:
 
@@ -41,6 +41,7 @@ For my Collaborate Sessions, you can get the **slides & R code** for each week h
 <img src="Pics/download_github.png" style="width: 50%" />
 
 ]
+
 
 ---
 
