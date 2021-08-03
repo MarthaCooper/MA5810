@@ -3,7 +3,7 @@ title: "MA5810: Introduction to Data Mining"
 subtitle: "Week 5; Collaborate Session 1: Principal Components Analysis"
 author: "Martha Cooper, PhD"
 institute: "JCU Masters of Data Science"
-date: "2019-21-9 (updated: `r Sys.Date()`)"
+date: "`r Sys.Date()`"
 output:
   xaringan::moon_reader:
     css: xaringan-themer.css
@@ -28,9 +28,9 @@ mono_accent(
 
 ## Housekeeping
 
-+ Collaborate 1 = **Wednesdays 6-7pm** (Martha)
++ Collaborate 1 = **Tuesday 6.45-8pm** (Martha)
 
-+ Collaborate 2 = **Thursdays 7-8pm** (Hongbin)
++ Collaborate 2 = **Thursday 6.45-8pm** (Martina)
 
 For my Collaborate Sessions, you can get the **slides & R code** for each week here:
 
@@ -42,14 +42,12 @@ For my Collaborate Sessions, you can get the **slides & R code** for each week h
 
 ]
 
+
 ---
 
 ## Assessments
 
-Next week's collaborate session 1 will focus on:
-
-+ Common mistakes made in Assessment 1  
-+ Clarification for the Capstone project (Assessment 3)
++ Assessment 2 is due on **Sunday 08/08/21**
 
 ---
 ## Subject: MA5810 Intro to Data Mining
@@ -204,7 +202,7 @@ A technique for summarizing a large set of variables into a smaller number of re
 
 + Subjective
 + Exploratory data analysis
-+ Difficult to assess results
++ Difficult to interpret & assess results
 
 ]
 
@@ -250,10 +248,117 @@ fviz_pca_ind(pc,
 
 ---
 
+## Scaling
+
+```{r include=FALSE}
+library(factoextra, quietly = T)
+```
+.center[
+
+
+```{r echo=FALSE, fig.width = 7, fig.height = 3, dpi=100}
+dat <- iris[ ,1:4] # remove Species column
+
+pc_scaled <- prcomp(dat, center = T, scale = T) 
+pc_unscaled <- prcomp(dat, center = T, scale = F)
+
+a <- fviz_pca_biplot(pc_scaled, 
+             habillage = iris$Species,
+             addEllipses = TRUE,
+             geom = "point")+
+  ggtitle("Scaled")
+
+b <- fviz_pca_biplot(pc_unscaled, 
+             habillage = iris$Species,
+             addEllipses = TRUE,
+             geom = "point")+
+  ggtitle("Unscaled")
+
+egg::ggarrange(b,a, nrow=1)
+```
+
+
+```{r echo=FALSE}
+data.frame(unscaled_variance = sapply(iris[1:4], var),
+           scaled_variance = sapply(as.data.frame(scale(iris[1:4])), var))
+```
+
+]
+---
+
+## PCA in R
+
+Different functions have different methods for calculating the principal components: 
+
++ prcomp() - Singular Value Decomposition (SVD)
+
++ factoextra::PCA() - Singular Value Decomposition (SVD)
+
++ princomp() - Spectral Decomposition
+
+---
+
+## Principal Components Regression
+
+Use *principal components as predictors in a regression model* instead of using the original larger set of variables.
+
+1. Transform $n \times p$ into $n \times M$ dimensions using Principal Components Analysis, where $M >> p$
+2. Fit regression model using the $M$ predictors. 
+
+---
+
+## Principal Components Regression in R
+
+Use ISLR::Hitters data set to predict baseball players **salaries** using **19 different variables**
+```{r, eval = F}
+library(ISLR) # data
+library(pls) # https://cran.r-project.org/web/packages/pls/index.html
+library(caret) # test/training split
+
+data("Hitters")
+hit_dat <- na.omit(Hitters) #remove missing values
+set.seed(6)
+split_train<- createDataPartition(Default$default, p = 0.8, list = F)
+
+# perform PCR on training data with standardisation of predictors
+# perform 10 fold cross validation to compute error for each possible value of M
+set.seed(6)
+pcr_fit <- pcr(Salary ~., data = hit_dat, scale = TRUE, subset = split_train, validation = "CV") 
+summary(pcr_fit) #view fit
+validationplot(pcr_fit, val.type="MSEP", legendpos = "top") #plot mean squared error; lowest = 6]
+
+# make predictions on test data
+pcr_pred <- predict(pcr_fit, hit_dat[-split_train, ], ncomp=6) # predictions
+mean((pcr_pred-hit_dat[-split_train, "Salary"])^2) # assess MSE
+```
+
+---
+
+## Preprocessing with Principal Components Analysis - not just for regression
+
+Other classification and clustering methods can be adapted to use $n \times M$ matrix where there columns are the first $M << p$ principal component score vectors, rather than the full $n \times p$ data set. 
+
+
++ caret::preProcess()
+    + [Caret Book](https://topepo.github.io/caret/pre-processing.html#pp)
+    + [Jeff Leak's lecture](https://www.coursera.org/lecture/practical-machine-learning/preprocessing-with-principal-components-analysis-QU66P)
+
++ Do it manually yourself using **prcomp()** and then your classifier of choice *e.g.* **glm(family="binomial")**
+
++ Notes
+    + Interpretation is harder as PCs are complex linear combinations of original variables
+    + Outliers can have large effects on PCA - visualise first
+    + Need to transform data? *e.g.* log scale
+
+---
+
 ### Extra reading
 
 + Chapter 10.2 of James *et al.*, [ISLR](http://faculty.marshall.usc.edu/gareth-james/ISL/) 
-
+    + PCA for unsupervised learning
+    
++ Chapter 6.3 of James *et al.*, [ISLR](http://faculty.marshall.usc.edu/gareth-james/ISL/) 
+    + Principal Components Regression
 
 ---
 
